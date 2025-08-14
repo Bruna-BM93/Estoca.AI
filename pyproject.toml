@@ -3,7 +3,10 @@ name = "estoque-ai"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "GuilhermeAntunes",email = "guilherme.antunes.silva@hotmail.com"}
+    {name = "GuilhermeAntunes",email = "guilherme.antunes.silva@hotmail.com"},
+    {name = "",email = ""},
+    {name = "",email = ""},
+    {name = "",email = ""},
 ]
 readme = "README.md"
 requires-python = ">=3.13,<4.0"
