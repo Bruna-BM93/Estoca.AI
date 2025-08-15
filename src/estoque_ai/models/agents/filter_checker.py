@@ -178,6 +178,3 @@ def filter_validator(question):
     response=llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return response.content
-
-response = filter_validator('produto')
-print(response)
