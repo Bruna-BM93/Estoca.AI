@@ -1,0 +1,871 @@
+quasFORMAT: 1A
+HOST: https://v4.egestor.com.br/api/v1/
+
+URL homologação/produção (access_token): https://api.egestor.com.br/api/oauth/access_token
+
+# eGestor API
+
+O [eGestor](https://www.egestor.com.br) disponibiliza uma API RESTful que permite o acesso aos módulos do sistema.
+
+Recursos disponíveis para acesso via API:
+* [**Dados da empresa**](#reference/recursos/empresa)
+* [**Contatos**](#reference/recursos/contatos)
+* [**Categoria de produtos**](#reference/recursos/categorias)
+* [**Produtos**](#reference/recursos/produtos)
+* [**Ajuste de estoque**](#reference/recursos/ajuste-de-estoque)
+* [**Serviços**](#reference/recursos/servicos)
+* [**Disponíveis**](#reference/recursos/disponiveis)
+* [**Formas de pagamento**](#reference/recursos/formas-de-pagamento)
+* [**Plano de contas**](#reference/recursos/plano-de-contas)
+* [**Grupo de tributos**](#reference/recursos/grupo-de-tributos)
+* [**Recebimentos**](#reference/recursos/recebimentos)
+* [**Pagamentos**](#reference/recursos/pagamentos)
+* [**Compras**](#reference/recursos/compras)
+* [**Vendas / Ordens de serviço / OS**](#reference/recursos/vendas-ordens-de-servico-os)
+* [**Devolução de vendas**](#reference/recursos/devolucoes)
+* [**Boletos**](#reference/recursos/boletos)
+* [**Relatórios**](#reference/recursos/relatorios)
+* [**NFSe**](#reference/recursos/nfse)
+* [**NFe**](#reference/recursos/nfe)
+* [**Disco virtual**](#reference/recursos/disco-virtual)
+* [**Usuários**](#reference/recursos/usuarios)
+* [**Webhooks**](#reference/recursos/webhooks)
+
+## Métodos
+Requisições para a API devem seguir os padrões:
+| Método | Descrição |
+|---|---|
+| `GET` | Retorna informações de um ou mais registros. |
+
+## Respostas
+
+| Código | Descrição |
+|---|---|
+| `200` | Requisição executada com sucesso (success).|
+| `400` | Erros de validação ou os campos informados não existem no sistema.|
+| `401` | Dados de acesso inválidos.|
+| `404` | Registro pesquisado não encontrado (Not found).|
+| `405` | Método não implementado.|
+| `410` | Registro pesquisado foi apagado do sistema e não esta mais disponível.|
+| `422` | Dados informados estão fora do escopo definido para o campo.|
+| `429` | Número máximo de requisições atingido. (*aguarde alguns segundos e tente novamente*)|
+
+
+## Limites (Throttling)
+Existe o limite de `60` requisições por minuto por aplicação+usuário.
+
+Você pode acompanhar esses limites nos `headers`: `X-RateLimit-Limit`, `X-RateLimit-Remaining` enviados em todas as respostas da API.
+
+Ações de `listar` exibem `50` registros por página. Não é possível alterar este número.
+
+Por questões de segurança, todas as requisições serão feitas através do protocolo `HTTPS`.
+
+## Listar
+As ações de `listar` permitem o envio dos seguintes parâmetros:
+
+| Parâmetro | Descrição |
+|---|---|
+| `filtro` | Filtra dados pelo valor informado. |
+| `page` | Informa qual página deve ser retornada. |
+
+
+# Group Autenticação - OAuth
+
+Nossa API utiliza [OAuth2](https://oauth.net/2/) como forma de autenticação/autorização.
+
+
+## Solicitando tokens de acesso [/oauth/access_token]
+
+Para testar a API, crie uma conta no eGestor e entre no sistema utilizando as credenciais informadas.  
+Para gerar o token da API (personal_token)
+
+### Obtendo o personal_token
+
+Para testar a API do eGestor (sandbox), sugerimos a criação de uma conta de testes.
+
+Para obter o personal_token, siga as instruções do video a seguir: https://www.youtube.com/watch?v=2y648YPA9Us&authuser=1
+
+### Utilizando personal_token [POST]
+**Atenção! O endpoint de login não utiliza o parâmetro da versão da API (v1). Utilize a seguinte URL:**
+
+> POST https://api.egestor.com.br/api/oauth/access_token
+
+O `personal_token` é do formato JWT e contém informações da empresa (subdomínio) e do usuário. Este é o token utilizado em sistemas de e-Commerce e sites integrados ao eGestor.
+
+
+#### Dados para envio no POST
+| Parâmetro | Descrição |
+|---|---|
+| `grant_type` | Informar: `personal` |
+| `personal_token` | Token JWT com informações da aplicação cliente. |
+
+
++ Request (application/json)
+
+    + Body
+
+            {
+              "grant_type": "personal"
+              "personal_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHAiOiIzNDhlNTM4MzQ2M2Y3MzZjMGExZTJhNTFmNjYwZjA5NCIsInN1YmRvbWluaW8iOiJleGVtcGxvIiwiY2xpZW50IjoiMTU0ZDZlZGQ4YmQzMDEwYzQ4NjBkN2E5Yzk1NzNmYmVmZTUyNGRlZiJ9.JJNs0bFtGOtwyJy_r-eefsvkd387M_x7zpucE1m4WIw",
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "access_token": "[access_token]",
+                "token_type": "Bearer",
+                "expires_in": 900,
+                "refresh_token": "[refresh_token]"
+            }
+
+
+
+
+# Recebimentos [/recebimentos]
+ Cadastro de contas a receber.
+
+ | Situação | Descrição | Data |
+ |------|------------|---------|
+ | `20` | Em aberto. | DT de vencimento |
+ | `40` | Recebido. | DT de pagamento |
+
+
+### Listar (List) [GET /recebimentos{?filtro,dtTipo,dtIni,dtFim,caixa,origem,conciliacao,planoContas,obs,formaPgto,numDoc,situFin,boleto,recibo,fields,orderBy}]
+
++ Parameters
+    + filtro (optional) - Busca a string informada nos campos: código do recebimento, descrição, palavras-chave e nome do cliente. Pode-se informar vários códigos, separados por virgula.
+    + dtTipo (optional, string) - Define a data que será utilizada pelos filtros dtIni e dtFim. Valores possíveis: 
+      * dtVencPgto(default) - Data de venc/pgto (caso em aberto, filtra por vencimento, caso pago filtra por pagamento)
+      * dtVenc - Data de vencimento
+      * dtPgto - Data de pagamento
+      * dtComp - Data de competência
+      * dtCad - Data de cadastro
+      * dtCred - Data de crédito
+    + dtIni (optional, date) - Data inicial, no formato yyyy-mm-dd
+    + dtFim (optional, date) - Data final, no formato yyyy-mm-dd
+    + caixa (optional, integer) - Código interno da conta caixa
+    + origem (optional, string) - Origem do recebimento. Valores possíveis:
+      * 'vendas'
+      * 'compras'
+      * 'financeiro'
+      * 'recorrencia'
+    + conciliacao (optional, string) - Filtrar pela situação da conciliação bancária. Valores possíveis:
+      * 'com' - Somento registros com conciliação bancária
+      * 'sem' - Somento registros sem conciliação bancária
+    + planoContas (optional, integer) - Código interno do plano de contas vinculado
+    + obs (optional, string) - Pesquisa nas observações adicionais do recebimento.
+    + formaPgto (optional, integer) - Código interno da forma de pagamento
+    + numDoc (optional, string) - Número do documento
+    + situFin (optional, integer) - Situação atual do recebimento. Valores possíveis:
+      * 20 - A receber
+      * 40 - Recebida
+    + boleto (optional, string) - Filtra por recebimento com/sem boletos. Valores possíveis:
+      * 'com' - Com boleto vinculado
+      * 'sem' - Sem boleto vinculado
+    + recibo (optional, string) - Filtra por recebimento com/sem recibos. Valores possíveis:
+      * 'com' - Com recibo vinculado
+      * 'sem' - Sem recibo vinculado
+    + fields (optional) - Permite definir quais os campos serão retornados pela api. Informe separado por vírgula. Valores possíveis:
+        * codigo, numDoc, descricao, valor, taxa, data, dtVenc, dtPgto, dtCad, dtComp, dtCred, situacao, codContato, codPlanoContas, nomeContato, origem, codDisponivel, codModulo, obs, tags 
+        * ex: &fields=nomeContato,valor
+        * Padrão: codigo,descricao,valor,data,situacao,nomeContato
+    + orderBy (optional) - Permite definir a ordenação da listagem. Informe o campo e a forma de ordenação (ascendente ou descendente) separados por vírgula. Só é possível definir uma ordenação por requisição. Valores possíveis:
+        * codigo, codContato, nomeContato, codFormaPgto, codDisponivel, codPlanoContas, codConciliacao, codBoleto, codRecibo, codModulo, origem, descricao, numDoc, tags, valor, valorPago, taxa, dtComp, dtVenc, dtPgto, dtCad, dtCred, dtDel, motivoDel, obs, previsao, situacao
+        * ex: &orderBy=situacao,desc
+        * ex: &orderBy=nomeContato,asc
+
++ Request (application/json)
+
+  + Headers
+
+            Authorization: Bearer [access_token]
+
++ Response 200 (application/json)
+  + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 59
+
+  + Body
+
+            {
+                "total": 1,
+                "per_page": 50,
+                "current_page": 1,
+                "last_page": 4,
+                "next_page_url": null,
+                "prev_page_url": null,
+                "from": 1,
+                "to": 50,
+                "data": [
+                  {
+                    "codigo": "1",
+                    "descricao": "Venda direta editada",
+                    "situacao": "40",
+                    "data": "2017-04-24",
+                    "valor": "50.00",
+                    "nomeContato": "Nome do cliente"
+                  }
+                ]
+            }
+
+### Detalhar [GET /recebimentos/{codigo}]
+
+
++ Parameters
+    + codigo (required, number, `1`) ... Código do recebimento
+
++ Request (application/json)
+
+    + Headers
+
+              Authorization: Bearer [access_token]
+
++ Response 200 (application/json)
+
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 59
+
+    + Body
+
+            {
+                "codigo": 2430,
+                "codPlanoContas": 1,
+                "codFormaPgto": 0,
+                "numDoc": "",
+                "descricao": "Recebimento parcela 1/1",
+                "valor": 500,
+                "taxa": 0,
+                "dtVenc": "2019-04-15",
+                "dtPgto": "",
+                "dtCad": "2024-09-01 11:06:50",
+                "dtComp": "2024-09-01",
+                "dtCred": "2024-09-15",
+                "situacao": 20,
+                "codContato": 7,
+                "codDisponivel": 6,
+                "origem": "financeiro",
+                "codModulo": 2430,
+                "obs": "",
+                "tags": [
+                    "tag1,tag2"
+                ]
+            }
+
++ Response 410 (application/json)
+  Quando o registro foi apagado do sistema, o código de retorno é 410.
+
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 59
+
+    + Body
+
+            {
+              "errCode": 410,
+              "errMsg": "Registro com código 1 não existe.",
+              "errObs": null,
+              "errFields": null
+            }
+
++ Response 404 (application/json)
+  Quando registro não for encontrado.
+
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 59
+
+    + Body
+
+            {
+              "errCode": 404,
+              "errMsg": "Nenhum registro com código 1 econtrado",
+              "errObs": null,
+              "errFields": null
+            }
+
+# Pagamentos [/pagamentos]
+ Cadastro de contas a pagar.
+
+ | Situação | Descrição |
+ |------|------------|
+ | `10` | Em aberto. |
+ | `30` | Pago. |
+
+
+### Listar (List) [GET /pagamentos{?filtro,dtTipo,dtIni,dtFim,caixa,origem,conciliacao,planoContas,obs,formaPgto,numDoc,situFin,boleto,recibo,fields,orderBy}]
++ Parameters
+    + filtro (optional) - Busca a string informada nos campos: código do pagamento, descrição, palavras-chave e nome do cliente. Pode-se informar vários códigos, separados por virgula.
+    + dtTipo (optional, string) - Define a data que será utilizada pelos filtros dtIni e dtFim. Valores possíveis: 
+      * dtVencPgto(default) - Data de venc/pgto (caso em aberto, filtra por vencimento, caso pago filtra por pagamento)
+      * dtVenc - Data de vencimento
+      * dtPgto - Data de pagamento
+      * dtComp - Data de competência
+      * dtCad - Data de cadastro
+    + dtIni (optional) - Data inicial, no formato yyyy-mm-dd
+    + dtFim (optional) - Data final, no formato yyyy-mm-dd
+    + caixa (optional, integer) - Código interno da conta caixa
+    + origem (optional, string) - Origem do pagamento. Valores possíveis:
+      * 'vendas'
+      * 'compras'
+      * 'financeiro'
+      * 'recorrencia'
+    + conciliacao (optional, string) - Filtrar pela situação da conciliação bancária. Valores possíveis:
+      * 'com' - Somento registros com conciliação bancária
+      * 'sem' - Somento registros sem conciliação bancária
+    + planoContas (optional, integer) - Código interno do plano de contas vinculado
+    + obs (optional, string) - Pesquisa nas observações adicionais do pagamento.
+    + formaPgto (optional, integer) - Código interno da forma de pagamento
+    + numDoc (optional, string) - Número do documento
+    + situFin (optional, integer) - Situação atual do pagamento. Valores possíveis:
+      * 20 - A receber
+      * 40 Recebida
+    + boleto (optional, string) - Filtra por pagamento com/sem boletos. Valores possíveis:
+      * 'com' - Com boleto vinculado
+      * 'sem' - Sem boleto vinculado
+    + recibo (optional, string) - Filtra por pagamento com/sem recibos. Valores possíveis:
+      * 'com' - Com recibo vinculado
+      * 'sem' - Sem recibo vinculado
+    + fields (optional) - Permite definir quais os campos serão retornados pela api. Informe separado por vírgula. Valores possíveis:
+        * codigo, numDoc, descricao, valor, taxa, data, dtVenc, dtPgto, dtCad, dtComp, situacao, codContato, codPlanoContas, nomeContato, origem, codDisponivel, codModulo, obs, tags 
+        * ex: &fields=nomeContato,valor
+        * Padrão: codigo,descricao,valor,data,situacao,nomeContato
+    + orderBy (optional) - Permite definir a ordenação da listagem. Informe o campo e a forma de ordenação (ascendente ou descendente) separados por vírgula. Só é possível definir uma ordenação por requisição. Valores possíveis:
+        * codigo, codContato, nomeContato, codFormaPgto, codDisponivel, codPlanoContas, codConciliacao, codBoleto, codRecibo, codModulo, origem, descricao, numDoc, tags, valor, valorPago, taxa, dtComp, dtVenc, dtPgto, dtCad, dtDel, motivoDel, obs, previsao, situacao
+        * ex: &orderBy=situacao,desc
+        * ex: &orderBy=nomeContato,asc
+
++ Request (application/json)
+
+  + Headers
+
+            Authorization: Bearer [access_token]
+
++ Response 200 (application/json)
+
+          {
+              "total": 1,
+              "per_page": 50,
+              "current_page": 1,
+              "last_page": 4,
+              "next_page_url": null,
+              "prev_page_url": null,
+              "from": 1,
+              "to": 50,
+              "data": [
+                {
+                    "codigo": 1,
+                    "descricao": "Compra de produtos, cód 1, parcela 1/2",
+                    "valor": 780,
+                    "data": "2018-11-23",
+                    "situacao": 30,
+                    "nomeContato": "Fornecedor padrão"
+                }
+              ]
+          }
+
+### Detalhar [GET /pagamentos/{codigo}]
+
++ Request (application/json)
+
+  + Headers
+
+            Authorization: Bearer [access_token]
+
++ Parameters
+    + codigo (required, number, `1`) ... Código do pagamento
+
++ Response 200 (application/json)
+
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 58
+
+    + Body
+
+            {
+                "codigo": 1,
+                "codPlanoContas": 1,
+                "codFormaPgto": 0,
+                "numDoc": "",
+                "descricao": "Recebimento parcela 1/1",
+                "valor": 500,
+                "taxa": 0,
+                "dtVenc": "2019-04-15",
+                "dtPgto": "",
+                "dtCad": "2019-05-08 11:45:53",
+                "dtComp": "2019-04-20",
+                "situacao": 10,
+                "codContato": 7,
+                "codDisponivel": 2,
+                "origem": "financeiro",
+                "codModulo": 2431,
+                "obs": "",
+                "tags": [
+                    "tag1,tag2"
+                ]
+            }
+
++ Response 410 (application/json)
+ Quando o registro foi apagado do sistema, o código de retorno é 410.
+
+    + Body
+
+            {
+              "errCode": 410,
+              "errMsg": "Registro com código 1 não existe.",
+              "errObs": null,
+              "errFields": null
+            }
+
++ Response 404 (application/json)
+ Quando o registro não foi encontrado (Not found).
+
+    + Body
+
+            {
+              "errCode": 404,
+              "errMsg": "Nenhum registro com código 1 econtrado",
+              "errObs": null,
+              "errFields": null
+            }
+
+### Detalhar contato do pagamento [GET /pagamentos/{codigo}/contato]
+
++ Request (application/json)
+
+  + Headers
+
+            Authorization: Bearer [access_token]
+
++ Parameters
+    + codigo (required, number, `1`) ... Código do pagamento
+
++ Response 200 (application/json)
+
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 58
+
+    + Body
+
+            {
+              "codigo": 1,
+              "nome": "Contato de uma conta a receber",
+              "fantasia": "",
+              "nomeContato": "",
+              "cpfcnpj": "",
+              "tipo": [
+                "cliente"
+              ],
+              "dtNasc": "",
+              "dtCad": "2016-04-19 11:07:58",
+              "emails": [],
+              "fones": [],
+              "cep": "",
+              "logradouro": "",
+              "numero": "",
+              "complemento": "",
+              "bairro": "",
+              "cidade": "",
+              "codIBGE": "",
+              "uf": "RS",
+              "pais": "",
+              "clienteFinal": true,
+              "indicadorIE": 9,
+              "inscricaoMunicipal": "",
+              "inscricaoEstadual": "",
+              "inscricaoEstadualST": "",
+              "suframa": "",
+              "obs": "",
+              "tags": []
+            }
+
+
+# Formas de pagamento [/formasPagamento]
+
+ | tipoCusto | Descrição |
+ |------|------------|
+ | `0` | Sem custo. |
+ | `1` | Porcentagem. |
+ | `2` | Fixo por total. |
+ | `3` | Fixo por parcela. |
+
+ | formaPgtoNFCe | Descrição |
+ |------|------------|
+ | `0` | Nenhum |
+ | `1` | Dinheiro |
+ | `2` | Cheque |
+ | `3` | Cartão de Crédito |
+ | `4` | Cartão de Débito |
+ | `5` | Crédito Loja |
+ | `10` | Vale Alimentação |
+ | `11` | Vale Refeição |
+ | `12` | Vale Presente |
+ | `13` | Vale Combustível |
+ | `99` | Outros |
+
+### Listar (List) [GET /formasPagamento{?fields,orderBy}]
++ Parameters
+    + fields (optional) - Permite definir quais os campos serão retornados pela api. Informe separado por vírgula. Valores possíveis:
+        * codigo, codDisponivel, nome, formaPgtoNFCe, tipoCusto, valorCusto
+        * ex: &fields=nome,tipoCusto,valorCusto
+        * Padrão: codigo, codDisponivel, nome, formaPgtoNFCe, tipoCusto, valorCusto
+    + orderBy (optional) - Permite definir a ordenação da listagem. Informe o campo e a forma de ordenação (ascendente ou descendente) separados por vírgula. Só é possível definir uma ordenação por requisição. Valores possíveis:
+        * codigo, codDisponivel, nome, formaPgtoNFCe, tipoCusto, valorCusto
+        * ex: &orderBy=nome,asc
+        * ex: &orderBy=codigo,desc
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [access_token]
+
++ Response 200 (application/json)
+
+          {
+              "total": 1,
+              "per_page": 50,
+              "current_page": 1,
+              "last_page": 4,
+              "next_page_url": null,
+              "prev_page_url": null,
+              "from": 1,
+              "to": 50,
+              "data": [
+                {
+                  "codigo": 1,
+                  "codDisponivel": 1,
+                  "nome": "Dinheiro",
+                  "formaPgtoNFCe": 1,
+                  "tipoCusto": 0,
+                  "valorCusto": 0
+                }
+              ]
+          }
+
++ Response 401 (application/json)
+
+          {
+              "errCode": 401,
+              "errMsg": "Não foi possível acessar o sistema. Verifique seu \"access_token\".",
+              "errObs": "access_denied",
+              "errFields": null,
+              "errUrl": "/v1/formaspagamento"
+          }
+### Detalhar (Read) [GET /formasPagamento/{codigo}]
+
++ Parameters
+    + codigo (required, number, `1`) ... Código da forma de pagamento
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [access_token]
+
++ Response 200 (application/json)
+  Todos os dados da forma de pagamento
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 58
+
+    + Body
+
+            {
+              "codigo": 1,
+              "codDisponivel": 1,
+              "nome": "Boleto",
+              "formaPgtoNFCe": 99,
+              "tipoCusto": 2,
+              "valorCusto": 2.59
+            }
+
++ Response 404 (application/json)
+  Quando registro não for encontrado.
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 59
+
+    + Body
+
+            {
+              "errCode": 404,
+              "errMsg": "Nenhum registro com código 1 encontrado",
+              "errObs": null,
+              "errFields": null
+            }
+
++ Response 410 (application/json)
+  Quando registro foi apagado do sistema, o código de retorno é 410.
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 59
+    + Body
+
+            {
+              "errCode": 410,
+              "errMsg": "Registro com código 1 não existe.",
+              "errObs": null,
+              "errFields": null
+            }
+
+
+# Compras [/compras]
+
+As compras não podem ser editadas via API. Caso seja necessário, apague-a e crie uma nova.
+
+
+### Listar (List) [GET /compras{?filtro,dtTipo,dtIni,dtFim,situacao,observacoes,nota,fields,orderBy}]
+
++ Parameters
+    + filtro (optional, string) - Busca a string informada nos campos: código da compra, palavras-chave e nome do fornecedor.
+    + dtTipo (optional, string) - Define a data que será utilizada pelos filtros dtIni e dtFim. Valores possíveis: 
+        * dtCompra(default) - Data da compra.
+        * dtEntrega - Data de entrega.
+        * dtCad - Data de cadastro.
+    + dtIni (optional, date) - Data inicial, no formato yyyy-mm-dd
+    + dtFim (optional, date) - Data final, no formato yyyy-mm-dd
+    + situacao (optional, integer) - Filtra por compra ou orçamento. Valores possíveis: 
+        * 10 - Orçamento.
+        * 50 - Compra.
+    + observacoes (optional, string) - Pesquisa nas observações da compra.
+    + nota (optional, string) - Pesquisa no número da nota.
+    + fields (optional) - Permite definir quais os campos serão retornados pela api. Informe separado por vírgula. Valores possíveis:
+        * codigo, codContato, nomeContato, numNota, dtCompra, valorTotal, obs, tags, situacao, ativo
+        * ex: &fields=nomeContato,valorTotal
+    + orderBy (optional) - Permite definir a ordenação da listagem. Informe o campo e a forma de ordenação (ascendente ou descendente) separados por vírgula. Só é possível definir uma ordenação por requisição. Valores possíveis:
+        * codigo, codContato, nomeContato, numNota, dtCompra, dtEntrega, valorTotal, obs, tags, situacao, ativo
+        * ex: &orderBy=nomeContato,desc
+        * ex: &orderBy=numNota,asc
+    
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [access_token]
+
++ Response 200 (application/json)
+
+          {
+              "total": 1,
+              "per_page": 50,
+              "current_page": 1,
+              "last_page": 4,
+              "next_page_url": null,
+              "prev_page_url": null,
+              "from": 1,
+              "to": 50,
+              "data": [
+                {
+                    "codigo": 1,
+                    "codContato": 20,
+                    "nomeContato": "Fornecedor padrão",
+                    "numNota": "775",
+                    "dtCompra": "2019-05-03",
+                    "dtEntrega": "2019-05-03",
+                    "valorTotal": 494.76,
+                    "obs": "",
+                    "tags": [],
+                    "situacao": 50,
+                    "ativo": 1
+                }
+              ]
+          }
+
++ Response 401 (application/json)
+
+          {
+              "errCode": 401,
+              "errMsg": "Não foi possível acessar o sistema. Verifique seu \"access_token\".",
+              "errObs": "access_denied",
+              "errFields": null,
+              "errUrl": "/v1/compras"
+          }
+
+### Detalhar (Read) [GET /compras/{codigo}]
+
++ Parameters
+    + codigo (required, number, `1`) ... Código da venda
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [access_token]
+
++ Response 200 (application/json)
+  Todos os dados do contato
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 58
+
+    + Body
+
+            {
+                "codigo": 173,
+                "codContato": 20,
+                "nomeContato": "Fornecedor padrão",
+                "codCompraXML": 0,
+                "numNota": "775",
+                "dtCompra": "2019-05-03",
+                "dtEntrega": "2019-05-03",
+                "dtCad": "2019-05-03 17:41:31",
+                "valorTotal": 504789.76,
+                "extFrete": 0,
+                "extST": 0,
+                "extDesp": 0,
+                "obs": "",
+                "tags": [],
+                "situacao": 10,
+                "ativo": 1,
+                "produtos": [
+                    {
+                        "codigo": 10,
+                        "codProduto": 5553,
+                        "custoBruto": 499.99,
+                        "quant": 1000,
+                        "vDesc": 0,
+                        "valorIPI": 0,
+                        "valorST": 0,
+                        "descricao": "Produto 10",
+                        "codigoProprio": "10prop"
+                    },
+                    {
+                        "codigo": 20,
+                        "codProduto": 12,
+                        "custoBruto": 399.98,
+                        "quant": 12,
+                        "vDesc": 0,
+                        "valorIPI": 0,
+                        "valorST": 0,
+                        "descricao": "Produto 20",
+                        "codigoProprio": "20prop"
+                    }
+                ],
+                "financeiros": [
+                    {
+                        "codigo": 2326,
+                        "codBoleto": 0,
+                        "descricao": "Compra parcela 1/3",
+                        "codCaixa": 5,
+                        "codRecibo": 0,
+                        "situacao": 10,
+                        "dtComp": "2019-05-03",
+                        "tags": [],
+                        "dtVenc": "2019-06-03",
+                        "valor": 164.92
+                    },
+                    {
+                        "codigo": 2327,
+                        "codBoleto": 0,
+                        "descricao": "Compra parcela 2/3",
+                        "codCaixa": 5,
+                        "codRecibo": 0,
+                        "situacao": 10,
+                        "dtComp": "2019-05-03",
+                        "tags": [],
+                        "dtVenc": "2019-07-03",
+                        "valor": 164.92
+                    },
+                    {
+                        "codigo": 2328,
+                        "codBoleto": 0,
+                        "descricao": "Compra parcela 3/3",
+                        "codCaixa": 5,
+                        "codRecibo": 0,
+                        "situacao": 10,
+                        "dtComp": "2019-05-03",
+                        "tags": [],
+                        "dtVenc": "2019-08-03",
+                        "valor": 164.92
+                    }
+                ]
+            }
+
++ Response 404 (application/json)
+  Quando o registro não foi encontrado.
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 59
+
+    + Body
+
+            {
+              "errCode": 404,
+              "errMsg": "Nenhum registro com código 1 econtrado",
+              "errObs": null,
+              "errFields": null
+            }
+
++ Response 410 (application/json)
+  Quando o registro foi apagado do sistema.
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 59
+    + Body
+
+            {
+              "errCode": 410,
+              "errMsg": "Registro com código 1 não existe.",
+              "errObs": null,
+              "errFields": null
+            }
+
+### Detalhar XML NFE (Read) [GET /compras/{codigo}/nfe]
+
++ Parameters
+    + codigo (required, number, `1`) ... Código da compra
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: Bearer [access_token]
+
++ Response 200 (application/json)
+Todos os XMLs associados a venda, e suas respectivas situações.
+| Situação | Descrição |
+|------|--------|
+| `10` | Orçamento |
+| `20` | Compra |
+
+    + Headers
+
+            X-RateLimit-Limit: 60
+            X-RateLimit-Remaining: 58
+
+    + Body
+
+        [
+            {
+                "codigo": "100",
+                "chave": "43191014911562000100550010000150951741512345", 
+                "situacao": "20",
+                "nota": "<?xml version=\"1.0\"?><nfeProc xmlns=\"http://www.portalfiscal.inf.br/nfe\" versao=\"4.00\"><NFe xmlns=\"http://www.portalfiscal.inf.br/nfe\"><infNFe versao=\"4.00\"<ide><cUF>43</cUF><natOp>...</NFe>"
+            }
+            ,
+            {
+                "codigo": "101",
+                "chave": "43191014911562000100550010000150951741512346", 
+                "situacao": "20",
+                "nota": "<?xml version=\"1.0\"?><nfeProc xmlns=\"http://www.portalfiscal.inf.br/nfe\" versao=\"4.00\"><NFe xmlns=\"http://www.portalfiscal.inf.br/nfe\"><infNFe versao=\"4.00\"<ide><cUF>43</cUF><natOp>...</NFe>"
+            }
+        ]
+

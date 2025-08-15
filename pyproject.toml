@@ -4,14 +4,18 @@ version = "0.1.0"
 description = ""
 authors = [
     {name = "GuilhermeAntunes",email = "guilherme.antunes.silva@hotmail.com"},
-    {name = "",email = ""},
-    {name = "",email = ""},
-    {name = "",email = ""},
 ]
 readme = "README.md"
 requires-python = ">=3.13,<4.0"
+
 dependencies = [
-    "fastapi[standard] (>=0.116.1,<0.117.0)"
+    "fastapi[standard] (>=0.116.1,<0.117.0)",
+    "langchain (>=0.3.27,<0.4.0)",
+    "langchain-google-genai (>=2.1.9,<3.0.0)",
+    "langchain-groq (>=0.3.7,<0.4.0)",
+    "langchain-core (>=0.3.74,<0.4.0)",
+    "langchain-community (>=0.3.27,<0.4.0)",
+    "groq (>=0.31.0,<0.32.0)"
 ]
 
 [tool.poetry]
