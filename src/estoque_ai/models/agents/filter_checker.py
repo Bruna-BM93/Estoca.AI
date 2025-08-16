@@ -43,45 +43,32 @@ Analisar a pergunta do usuário e a rota selecionada para:
     "path": "/produtos",
     "method": "GET",
     "full_url": "https://v4.egestor.com.br/api/v1/produtos"
-  }},
-  "parameters": {{
-    "query": {{}},
-    "path": {{}},
-    "header": {{}}
-  }},
-  "authentication": {{
-    "auth_url": "https://api.egestor.com.br/api/oauth/access_token",
-    "method": "POST",
-    "flow": "OAuth personal token"
   }}
 }}
 ```
 
 ### Parâmetros Necessários Identificados
-```json
-{{
-  "validated": true,
-  "ready_for_execution": true,
-  "route": {{
-    "path": "/produtos",
-    "method": "GET", 
-    "full_url": "https://v4.egestor.com.br/api/v1/produtos"
-  }},
-  "parameters": {{
-    "query": {{
-      "filtro": "notebook",
-      "codCategoria": 10
-    }},
-    "path": {{}},
-    "header": {{}}
-  }},
-  "authentication": {{
-    "auth_url": "https://api.egestor.com.br/api/oauth/access_token",
-    "method": "POST",
-    "flow": "OAuth personal token"
-  }}
-}}
-```
+
+1. Identificar o valor do parâmetro `filtro` a partir do texto informado pelo usuário.
+2. Codificar este valor usando URL encoding antes de inserir na URL, seguindo as regras:
+   - Espaço → %20
+   - Barra `/` → %2F
+   - Aspas duplas `"` → %22
+   - Acentos e caracteres especiais devem ser convertidos para UTF-8 e codificados em URL.
+   
+3. Montar a URL no formato:
+   https://v4.egestor.com.br/api/v1/{{endpoint}}?filtro={{valor_codificado}}
+   
+4. Retornar o resultado final no seguinte JSON:
+   {{
+       "endpoint": "{{endpoint}}",
+       "full_url": "https://v4.egestor.com.br/api/v1/{{endpoint}}?filtro={{valor_codificado}}",
+       "method": "GET"
+   }}
+
+Importante:
+- Nunca deixar espaços ou caracteres especiais na URL sem codificação.
+- Usar sempre UTF-8 encoding para acentos e caracteres não-ASCII.
 
 ### Informações Faltantes
 ```json
@@ -96,9 +83,7 @@ Analisar a pergunta do usuário e a rota selecionada para:
         "question": "Qual o código do produto que você deseja consultar?"
       }}
     ]
-  }},
-  "user_message": "Para consultar um produto específico, preciso saber o código do produto. Qual código você gostaria de consultar?"
-}}
+  }}
 ```
 
 ### Erro de Validação

@@ -1,8 +1,15 @@
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 
-from request_route import route_executor
+import requests
+import os
+import json
+from dotenv import load_dotenv
+
 from models import llm_groq
+from filter_checker import filter_validator
+
+load_dotenv()
 
 
 template = """
@@ -35,11 +42,10 @@ Receber a pergunta original do usuário e os dados retornados pela API, transfor
 - **Use linguagem natural** - como se fosse uma conversa
 - **Remova todo markdown** - nada de *, **, #, etc.
 - **Retire barras e aspas** desnecessárias do texto
-- **Seja específico** com números e dados concretos
+- **Seja específico** com números e dados exatos
 
 ### Para Consultas com Dados
-- **Inicie com um resumo** do que foi encontrado
-- **Apresente informações relevantes** em formato de texto corrido
+- **um resumo** do que foi encontrado
 - **Use números específicos** quando disponível (quantidades, valores)
 - **Destaque informações importantes** sem usar formatação especial
 - **Organize logicamente** as informações mais relevantes primeiro
@@ -61,7 +67,7 @@ Receber a pergunta original do usuário e os dados retornados pela API, transfor
 ### Exemplo 1: Lista de Produtos
 **Pergunta:** "Quantos produtos têm cadastrados?"
 **Dados:** {{"success": true, "data": [{{"total": 245}}]}}
-**Resposta:** "Encontrei 245 produtos cadastrados no sistema."
+**Resposta:** "Encontrei os seguintes produtos:"
 
 ### Exemplo 2: Produtos com Filtro
 **Pergunta:** "Produtos da categoria eletrônicos"
@@ -112,6 +118,72 @@ Aqui está o que o usuário perguntou:
 {question}
 
 Aqui está a resposta do sistema:
-{data}
+{response_json}
 
 """
+
+
+def get_token():
+    API_KEY = os.getenv("API_ERP")
+    auth_url = os.getenv("AUTH_URL")
+
+    auth_body = {
+        "grant_type": "personal",
+        "personal_token": API_KEY
+    }
+
+    auth_response = requests.post(auth_url, json=auth_body)
+    auth_response.raise_for_status()
+
+    token_data = auth_response.json()
+    access_token = token_data.get("access_token")
+
+    if not access_token:
+        raise ValueError("Não foi possível obter o access_token. Verifique sua chave API.")
+
+    return access_token
+
+
+def route_executor(question):
+    prompt = PromptTemplate(
+        template=template,
+        input_variables=["question", "response_json"]
+    )
+
+    access_token = get_token()
+    # Valida rota com agente anterior
+    route = filter_validator(question)
+    validation = route.strip("```json").strip("```").strip()
+    route_validation = json.loads(validation)
+    print(route_validation)
+
+
+
+    if route_validation["validated"] is not True:
+        response = {
+            "erro": "Rota não validada",
+            "detalhes": route_validation
+        }
+
+    else:
+        if route_validation["route"]["method"] != "GET":
+            method = route_validation["route"]["method"]
+            response = {
+                "erro": "Método não suportado",
+                "metodo": method
+            }
+        else:
+            response = requests.get(url=route_validation["route"]["full_url"], headers={"Authorization": f"Bearer {access_token}"})
+            response = response.json()
+            print(response)
+
+
+
+    prompt_format = prompt.format(question=question, response_json=response)
+    response_format = llm_groq.invoke([HumanMessage(content=prompt_format)])
+
+    return response_format.content
+
+
+resposta = route_executor(question='me traga todos os produtos da categoria Matéria-Prima')
+print(resposta)

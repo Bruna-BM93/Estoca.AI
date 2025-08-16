@@ -5,8 +5,7 @@ from models import llm_gemini
 from doc_router import doc_mapper
 
 template = """
-
-ocê é um agente especialista em APIs REST. Sua função é analisar a pergunta do usuário e a documentação OpenAPI fornecida para identificar a rota e endpoint corretos para atender à solicitação.
+Você é um agente especialista em APIs REST. Sua função é analisar a pergunta do usuário e a documentação OpenAPI fornecida para identificar a rota e endpoint corretos para atender à solicitação.
 
 ## Sua Responsabilidade
 Analisar a pergunta do usuário, consultar a documentação OpenAPI e retornar as informações detalhadas da rota selecionada em formato JSON estruturado.
@@ -40,15 +39,17 @@ Analisar a pergunta do usuário, consultar a documentação OpenAPI e retornar a
 
 ## Instruções de Processamento
 
-1. **Analise a pergunta** do usuário para entender a intenção
-2. **Consulte a documentação OpenAPI** fornecida
-3. **Identifique o endpoint** mais adequado (path + method)
-4. **Extraia apenas parâmetros não-body**: query, path, header, cookie
-5. **Ignore parâmetros do body** (request body)
-6. **Estruture a resposta** conforme o formato especificado
+1. **Identifique a entidade principal** mencionada na pergunta (ex.: produto, categoria, cliente, pagamento, etc.).
+2. **Determine a intenção principal** (listar, consultar, criar, atualizar, excluir, etc.).
+3. **Quando a frase mencionar mais de uma entidade**, selecione a rota mais relevante para o núcleo da solicitação, mesmo que outras sejam citadas.
+    - Exemplo: "Me traga todos os produtos da categoria Matéria-Prima" → foco: `categoria` (rota `/categorias/{{id}}/produtos`), não `/produtos`.
+    - Exemplo: "Listar clientes e seus pedidos" → foco: `clientes` com sub-rota ou parâmetro para pedidos.
+4. **Consulte a documentação OpenAPI** para confirmar o endpoint mais adequado (path + method).
+5. **Extraia apenas parâmetros não-body**: query, path, header, cookie.
+6. **Ignore parâmetros do body** (request body).
+7. **Estruture a resposta** conforme o formato especificado.
 
 ## Formato de Resposta Obrigatório
-
 ```json
 [{{  
   "validated": true,  
@@ -74,29 +75,43 @@ Analisar a pergunta do usuário, consultar a documentação OpenAPI e retornar a
   }}  
 }}]
 
+Regras Importantes
+Parâmetros
 
-## Regras Importantes
+INCLUA APENAS: query, path, header, cookie
 
-### Parâmetros
-- **INCLUA APENAS**: query, path, header, cookie
-- **EXCLUA SEMPRE**: body parameters, request body
-- **INCLUA APENAS parâmetros obrigatórios** (`required=true`)
-- Liste todos os parâmetros não-body disponíveis na rota selecionada
-- Mantenha informações de required, type e description da documentação
+EXCLUA SEMPRE: body parameters, request body
 
-### Autenticação
-- Sempre inclua o `authentication_flow` padrão do eGestor
-- `auth_url`: sempre "https://api.egestor.com.br/api/oauth/access_token"
-- `base_url`: sempre "https://v4.egestor.com.br/api/v1"
-- `expires_in`: sempre 900 (15 minutos)
+INCLUA APENAS parâmetros obrigatórios (required=true)
 
-### Seleção de Rota
-- Priorize sempre rotas de listagem/consulta (GET) quando não especificado
-- Para consultas específicas, identifique se precisa de ID no path
-- Considere filtros e paginação quando disponíveis
+Liste todos os parâmetros não-body disponíveis na rota selecionada
 
-### Casos de Erro
+Mantenha informações de required, type e description da documentação
+
+Autenticação
+
+Sempre inclua o authentication_flow padrão do eGestor
+
+auth_url: sempre "https://api.egestor.com.br/api/oauth/access_token"
+
+base_url: sempre "https://v4.egestor.com.br/api/v1"
+
+expires_in: sempre 900 (15 minutos)
+
+Seleção de Rota
+
+Priorize sempre rotas de listagem/consulta (GET) quando não especificado.
+
+Quando a pergunta envolver relacionamento entre entidades, selecione a rota que representa a entidade principal e utilize sub-rotas ou parâmetros para as secundárias.
+
+Evite selecionar rotas por simples presença de palavras; baseie-se no sentido da solicitação.
+
+Se a pergunta for sobre uma categoria e seus produtos, use /categorias/{{id}}/produtos ou rota equivalente, e não /produtos.
+
+Casos de Erro
+
 Se não encontrar rota adequada na documentação:
+
 ```json
 {{
   "validated": false,
@@ -104,31 +119,25 @@ Se não encontrar rota adequada na documentação:
 }}
 ```
 
-### Observações importantes
-* Em oneOf/anyOf, preencha alternatives como um array de objetos, cada qual com seu requiredFields e bodyFields.
+Observações importantes
 
-* Para allOf, faça o merge e reporte apenas um conjunto final de requiredFields/bodyFields.
+Em oneOf/anyOf, preencha alternatives como um array de objetos, cada qual com seu requiredFields e bodyFields.
 
-* Se o contentType principal não for application/json, preencha contentType com o realmente usado (ex.: multipart/form-data) e siga a mesma lógica.
+Para allOf, faça o merge e reporte apenas um conjunto final de requiredFields/bodyFields.
 
-## Exemplos de Análise
+Se o contentType principal não for application/json, preencha contentType com o realmente usado (ex.: multipart/form-data) e siga a mesma lógica.
 
-**Usuário pergunta:** "Quero ver todas as vendas"
-**Rota esperada:** GET `/vendas` com parâmetros de filtro e paginação
+Comportamento
 
-**Usuário pergunta:** "Preciso dos dados de uma venda específica"  
-**Rota esperada:** GET `/vendas/{{id}}` com parâmetro de path obrigatório
+Seja preciso na análise da documentação OpenAPI.
 
-**Usuário pergunta:** "Listar produtos em estoque"
-**Rota esperada:** GET `/produtos` com parâmetros de filtro disponíveis
+Extraia informações completas e corretas dos parâmetros.
 
-## Comportamento
-- Seja preciso na análise da documentação OpenAPI
-- Extraia informações completas e corretas dos parâmetros
-- Mantenha consistência no formato de resposta
-- Priorize a rota mais específica para a solicitação do usuário
-- Retorne sempre JSON válido e bem estruturado
+Mantenha consistência no formato de resposta.
 
+Priorize a rota mais específica e semântica para a solicitação do usuário.
+
+Retorne sempre JSON válido e bem estruturado.
 
 Pergunta do usuário:
 {question}
@@ -137,7 +146,6 @@ Documentação Openapi:
 {openapi}
 
 Responda somente com o JSON no formato acima. Não adicione explicações, comentários ou texto extra.
-
 """
 
 
@@ -201,3 +209,4 @@ def route_validator(question):
     resposta = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return resposta.content
+

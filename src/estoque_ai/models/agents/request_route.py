@@ -11,44 +11,16 @@ from filter_checker import filter_validator
 load_dotenv()
 
 
-template = """
-# Prompt para Quarto Agente - Executor de Consultas ERP
+template = """  
+Você é o quarto agente de um sistema inteligente integrado ao ERP eGestor. Sua função é executar a consulta na API usando as informações validadas pelos agentes anteriores e retornar a resposta em formato JSON. sua função é consultar a rota que você recebera alem da rota você recebera o access_token que é obrigatorio para executar a consulta 
 
-Você é o quarto agente de um sistema inteligente integrado ao ERP eGestor.  
-Sua função é **executar a consulta na API** usando as informações validadas pelos agentes anteriores e **retornar a resposta em formato JSON puro**.
-
-## Instruções:
-1. Você receberá:
-   - **Rota da API** (`{{route}}`)
-   - **Access Token** (`{{access_token}}`) — obrigatório para autenticação
-   - (Opcional) **Parâmetros de consulta** — se aplicável à rota
-
-2. **Regra obrigatória sobre parâmetros**:  
-   - Se algum parâmetro essencial para a execução da consulta estiver **faltando**, você **não deve tentar executar a requisição**.
-   - Neste caso, retorne um JSON no seguinte formato:
-     ```json
-     {{
-       "erro": "Parâmetros ausentes",
-       "parametros_faltantes": ["nome_do_parametro1", "nome_do_parametro2"]
-     }}
-     ```
-
-3. **Execução da consulta**:
-   - Utilize o `access_token` no header de autenticação:
-     ```json
-     headers = {{
-         "Authorization": f"Bearer {{access_token}}"
-     }}
-     ```
-   - Realize a requisição para a rota informada.
-   - **Não adicione comentários ou texto fora do JSON final**.
-
-## Exemplo de consulta:
-```json
+# 2️⃣ Usar o access_token para acessar os produtos
 produtos_url = "https://v4.egestor.com.br/api/v1/produtos"
 headers = {{
     "Authorization": f"Bearer {{access_token}}"
 }}
+
+retorne apenas o json com os dados adiquiridos atraves da api.
 
 rota:
 {route}
@@ -82,19 +54,35 @@ def get_token():
 
 
 def route_executor(question):
-    access_token = get_token()
-    route = filter_validator(question)
 
     prompt = PromptTemplate(
         template=template,
         input_variables=["access_token", "route"]
     )
 
+    access_token = get_token()
+    route = filter_validator(question)
+
+    if route.get("validated") != True:
+        return route
+
+    if route.get("method") != "GET":
+        return route.get("method")
+
+    full_url = route.get("full_url")
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(full_url, headers=headers)
+    response.raise_for_status()
+
+
 
     prompt_format = prompt.format(access_token=access_token, route=route)
-    response = llm_gemini.invoke([HumanMessage(content=prompt_format)])
+    response_format = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
-    return response.content
+    return response_format.content
 
-token = route_executor('tem alguma NF?')
-print(token)
+resposta = route_executor(question='me traga todos os produtos cadastrados')
+print(resposta)
