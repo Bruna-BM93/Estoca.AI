@@ -165,7 +165,7 @@ As categorias são utilizadas para agrupar produtos, podendo filtrar posteriorme
               "errUrl": "/v1/categorias"
           }
 
-### Detalhar (Read) [GET /categorias/{codigo}]
+### Produto por categoria (Read) [GET /categorias/{codigo}]
 
 + Parameters
     + codigo (required, number, `1`) ... Código da categoria
@@ -177,7 +177,7 @@ As categorias são utilizadas para agrupar produtos, podendo filtrar posteriorme
             Authorization: Bearer [access_token]
 
 + Response 200 (application/json)
-  Todos os dados do categoria
+  Todos os dados da categoria
     + Headers
 
             X-RateLimit-Limit: 60

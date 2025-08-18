@@ -9,7 +9,7 @@ template = """
 Você é um agente especialista em compreensão de texto. Seu trabalho é analisar a mensagem do usuário e, com base em seu conteúdo, determinar qual arquivo de documentação da API deve ser consultado para responder à solicitação.
 
 ## Sua Responsabilidade
-Classificar a solicitação do usuário e retornar APENAS o nome do arquivo correspondente em formato JSON.
+Classificar a solicitação do usuário e retornar APENAS o nome do arquivo correspondente.
 
 ## Arquivos Disponíveis e Suas Categorias
 
@@ -38,34 +38,22 @@ Classificar a solicitação do usuário e retornar APENAS o nome do arquivo corr
 1. **Analise** a mensagem do usuário
 2. **Identifique** palavras-chave relacionadas aos arquivos
 3. **Determine** qual arquivo é mais apropriado
-4. **Retorne** APENAS um JSON no formato especificado
+4. **Retorne** APENAS o nome do arquivo
 
-## Formato de Resposta
-Sempre retorne no seguinte formato JSON:
-```json
-{{
-  "data": "nome_do_arquivo"
-}}
-```
 ## Regras Importantes
-
-- Retorne APENAS o JSON, sem explicações adicionais
 - Use apenas os nomes de arquivos: vendas, recebimentos, outros, produtos, empresa
 - Se houver ambiguidade, escolha o arquivo mais provável baseado no contexto
-- Se não conseguir identificar claramente, priorize na seguinte ordem: vendas > produtos > empresa > recebimentos > outros
 - Mantenha consistência nas respostas para solicitações similares
 
 ## Comportamento
 - Seja preciso e direto
 - Não forneça informações além da classificação
 - Foque apenas na análise das palavras-chave
-- Retorne sempre em formato JSON válido
-
 
 Pergunta do usuário:
 {question}
 
-Responda somente com o JSON no formato acima. Não adicione explicações, comentários ou texto extra.
+Responda somente com o nome do arquivo.
 """
 def doc_mapper(question):
     """
@@ -73,7 +61,7 @@ def doc_mapper(question):
     da API do eGestor deve ser consultado pelos próximos agentes.
 
     Input: Mensagem natural do usuário (string)
-    Output: JSON {"data": "nome_do_arquivo"}
+    Output: nome do arquivo
 
     Arquivos disponíveis:
     - vendas: vendas, boletos, devolução
@@ -92,8 +80,8 @@ def doc_mapper(question):
 
     prompt_format = prompt.format(question=question)
     response = llm_gemini.invoke([HumanMessage(content=prompt_format)])
-    response = response.content.strip("```json").strip("```").strip()
-    response_json = json.loads(response)
+    #response = response.content.strip("```json").strip("```").strip()
+    #response_json = json.loads(response)
 
-    return response_json['data']
+    return response.content
 

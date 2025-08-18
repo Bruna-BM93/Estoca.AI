@@ -2,8 +2,8 @@ from typing import Optional
 import uuid
 from fastapi import APIRouter, status
 from pydantic import BaseModel
-from app.agents.ex02.response_format import gerar_resposta
-from mongodb_database   import mongo_client
+from estoque_ai.models.agents import response_format
+
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 class ChatQuestion(BaseModel):
