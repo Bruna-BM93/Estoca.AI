@@ -42,4 +42,3 @@ def enviar_mensagem(pergunta: ChatQuestion):
 
 
     return interacao
-
