@@ -24,7 +24,7 @@ if not access_token:
     raise ValueError("Não foi possível obter o access_token. Verifique sua chave API.")
 
 # 2️⃣ Usar o access_token para acessar os produtos
-produtos_url = "https://v4.egestor.com.br/api/v1/produtos?filtro=Parafuso%20Franc%C3%AAs%20Inox%203%2F8%20X%201%22"
+produtos_url = "https://v4.egestor.com.br/api/v1/produtos?filtro=Armario%de%Cozinha"
 headers = {
     "Authorization": f"Bearer {access_token}"
 }

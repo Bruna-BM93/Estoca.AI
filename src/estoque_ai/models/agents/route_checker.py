@@ -55,22 +55,14 @@ Analisar a pergunta do usuário, consultar a documentação OpenAPI e retornar a
   "validated": true,  
   "selected_route": {{  
     "path": "/caminho/da/rota",  
-    "method": "GET",  
-    "description": "Descrição da finalidade da rota extraída da documentação",  
-    "auth_url": "https://api.egestor.com.br/api/oauth/access_token",  
-    "base_url": "https://v4.egestor.com.br/api/v1",  
-    "full_url": "https://v4.egestor.com.br/api/v1/caminho/da/rota",  
-    "authentication_flow": {{  
-      "step1": "POST para auth_url com grant_type: 'personal' e personal_token",  
-      "step2": "Usar access_token retornado no header Authorization: Bearer [access_token]",  
-      "expires_in": 900  
+    "method": "GET",    
+    "full_url": "https://v4.egestor.com.br/api/v1/caminho/da/rota",    
     }},  
     "parameters": [{{  
       "name": "nome_parametro",  
       "in": "query",  
       "required": true,  
-      "type": "string",  
-      "description": "Descrição do parâmetro"  
+      "type": "string",   
     }}]  
   }}  
 }}]
@@ -148,7 +140,46 @@ Documentação Openapi:
 Responda somente com o JSON no formato acima. Não adicione explicações, comentários ou texto extra.
 """
 
+template2 ="""
+Você é um agente especialista em APIs REST do eGestor. Sua função é receber **uma pergunta do usuário** e a **documentação OpenAPI resumida** e retornar a rota e endpoint corretos em JSON estruturado.
 
+## Regras Principais
+1. **Contexto Essencial:** Use apenas as informações necessárias da pergunta e do resumo de documentação. Ignore histórico completo.
+2. **Intenção e Entidade:** Identifique:
+   - Entidade principal (ex.: produto, categoria, cliente).
+   - Intenção (listar, consultar, criar, atualizar, excluir).
+   - Se houver múltiplas entidades, selecione a rota da entidade principal e trate as secundárias via parâmetros ou sub-rotas.
+3. **Rotas do eGestor:** Use somente rotas disponíveis para consultas/GET quando não especificado.
+4. **Parâmetros:** Inclua apenas parâmetros obrigatórios não-body (query, path, header, cookie). Ignore body/request body.
+5. **Consulta OpenAPI:** Use o resumo da documentação para confirmar path, method e parâmetros obrigatórios. Use merge de allOf, alternativas de oneOf/anyOf como arrays resumidos.
+
+## Formato de Resposta Obrigatório
+```json
+[{{  
+  "validated": true,  
+  "selected_route": {{  
+    "path": "/caminho/da/rota",  
+    "method": "GET",    
+    "full_url": "https://v4.egestor.com.br/api/v1/caminho/da/rota",    
+    }},  
+    "parameters": [{{  
+      "name": "nome_parametro",  
+      "in": "query",  
+      "required": true,  
+      "type": "string",   
+    }}]  
+  }}  
+}}]
+
+Pergunta do usuário:
+{question}
+
+Documentação Openapi:
+{openapi}
+
+Responda somente com o JSON no formato acima. Não adicione explicações, comentários ou texto extra.
+
+"""
 def route_validator(question):
     """
     SEGUNDO AGENTE - SELETOR DE ROTAS ERP
@@ -176,14 +207,14 @@ def route_validator(question):
     em especificação técnica da API para os agentes subsequentes.
     """
     prompt = PromptTemplate(
-        template=template,
+        template=template2,
         input_variables=["question","openapi"]
     )
 
     doc = doc_mapper(question)
 
     if doc == 'produtos':
-        with open('produtos.apib', 'r', encoding='utf-8') as file:
+        with open('openapi.json', 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     elif doc == 'empresa':
@@ -209,4 +240,3 @@ def route_validator(question):
     resposta = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return resposta.content
-

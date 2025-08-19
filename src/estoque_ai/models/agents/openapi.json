@@ -1,0 +1,43 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "eGestor API",
+    "version": "1.0.0",
+    "description": "API para acesso a produtos do eGestor."
+  },
+  "paths": {
+    "/produtos": {
+      "get": {
+        "summary": "Listar produtos",
+        "description": "Retorna a lista de produtos cadastrados no sistema.",
+        "parameters": [
+          { "name": "filtro", "in": "query", "schema": { "type": "string" }, "description": "Busca a string informada nos campos: código do produto, código próprio e nome do produto." },
+          { "name": "codCategoria", "in": "query", "schema": { "type": "integer" }, "description": "Código da categoria do produto." },
+          { "name": "controlarEstoque", "in": "query", "schema": { "type": "integer", "enum": [0,1] }, "description": "Filtra produtos que controlam (1) ou não controlam (0) estoque." },
+          { "name": "tipoUso", "in": "query", "schema": { "type": "integer", "enum": [0,1,2,3,4] }, "description": "Tipo de uso do produto (0=Revenda, 1=Matéria-prima, 2=Embalagem, 3=Em processo, 4=Final)." },
+          { "name": "arquivado", "in": "query", "schema": { "type": "boolean" }, "description": "Filtra apenas produtos arquivados." },
+          { "name": "Norig", "in": "query", "schema": { "type": "integer", "enum": [0,1,2,3,4,5,6,7,8] }, "description": "Origem fiscal do produto." },
+          { "name": "INCM", "in": "query", "schema": { "type": "integer" }, "description": "NCM do produto." },
+          { "name": "codConfigTrib", "in": "query", "schema": { "type": "integer" }, "description": "Código do grupo de tributos vinculado." },
+          { "name": "IcProd", "in": "query", "schema": { "type": "string" }, "description": "Código interno do produto." },
+          { "name": "anotInternas", "in": "query", "schema": { "type": "string" }, "description": "Filtro por observações internas." },
+          { "name": "updatedBefore", "in": "query", "schema": { "type": "string", "format": "date-time" }, "description": "Produtos alterados antes da data informada (YYYY-MM-DD HH:MM:SS)." },
+          { "name": "updatedAfter", "in": "query", "schema": { "type": "string", "format": "date-time" }, "description": "Produtos alterados após a data informada (YYYY-MM-DD HH:MM:SS)." },
+          { "name": "fields", "in": "query", "schema": { "type": "string" }, "description": "Define quais campos retornar, separados por vírgula. Ex: descricao,codigoProprio" },
+          { "name": "orderBy", "in": "query", "schema": { "type": "string" }, "description": "Define ordenação. Ex: descricao,asc ou margemLucro,desc" },
+          { "name": "page", "in": "query", "schema": { "type": "integer" }, "description": "Número da página a ser retornada." }
+        ],
+        "responses": {
+          "200": { "description": "Requisição executada com sucesso" },
+          "400": { "description": "Erros de validação" },
+          "401": { "description": "Dados de acesso inválidos" },
+          "404": { "description": "Registro não encontrado" },
+          "405": { "description": "Método não implementado" },
+          "410": { "description": "Registro apagado" },
+          "422": { "description": "Dados fora do escopo definido" },
+          "429": { "description": "Número máximo de requisições atingido" }
+        }
+      }
+    }
+  }
+}

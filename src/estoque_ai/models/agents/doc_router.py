@@ -6,49 +6,21 @@ import json
 from models import llm_gemini
 
 template = """
-Você é um agente especialista em compreensão de texto. Seu trabalho é analisar a mensagem do usuário e, com base em seu conteúdo, determinar qual arquivo de documentação da API deve ser consultado para responder à solicitação.
+## Tarefa
+Dada a mensagem do usuário, retorne **apenas** o nome do arquivo relevante: `vendas`, `recebimentos`, `produtos`, `empresa` ou `outros`.
 
-## Sua Responsabilidade
-Classificar a solicitação do usuário e retornar APENAS o nome do arquivo correspondente.
+## Palavras-chave
+- **vendas**: vendas, venda, boleto, boletos, devolução, devoluções, faturamento, nota fiscal, pedido de venda  
+- **recebimentos**: recebimentos, recebimento, compras, compra, pagamentos, pagamento, contas a receber, contas a pagar  
+- **produtos**: produtos, produto, estoque, categoria, categorias, inventário, item, itens  
+- **empresa**: empresa, contatos, contato, fornecedores, fornecedor, transportadores, transportador, clientes, cliente, pessoas  
+- **outros**: serviços, serviço, plano de contas, contas contábeis, disponíveis, relatórios gerais  
 
-## Arquivos Disponíveis e Suas Categorias
-
-### 1. **vendas**
-- Contém: vendas, boletos, devolução
-- Use quando o usuário mencionar: vendas, venda, boleto, boletos, devolução, devoluções, faturamento, nota fiscal, pedido de venda
-
-### 2. **recebimentos** 
-- Contém: recebimento, compras, pagamentos
-- Use quando o usuário mencionar: recebimentos, recebimento, compras, compra, pagamentos, pagamento, contas a receber, contas a pagar
-
-### 3. **outros**
-- Contém: serviços, disponíveis, plano de contas
-- Use quando o usuário mencionar: serviços, serviço, plano de contas, contas contábeis, disponíveis, relatórios gerais
-
-### 4. **produtos**
-- Contém: categorias, produtos, estoque
-- Use quando o usuário mencionar: produtos, produto, estoque, categoria, categorias, inventário, item, itens
-
-### 5. **empresa**
-- Contém: empresa, contatos, fornecedores, transportadores, clientes
-- Use quando o usuário mencionar: empresa, contatos, contato, fornecedores, fornecedor, transportadores, transportador, clientes, cliente, pessoas
-
-## Instruções de Funcionamento
-
-1. **Analise** a mensagem do usuário
-2. **Identifique** palavras-chave relacionadas aos arquivos
-3. **Determine** qual arquivo é mais apropriado
-4. **Retorne** APENAS o nome do arquivo
-
-## Regras Importantes
-- Use apenas os nomes de arquivos: vendas, recebimentos, outros, produtos, empresa
-- Se houver ambiguidade, escolha o arquivo mais provável baseado no contexto
-- Mantenha consistência nas respostas para solicitações similares
-
-## Comportamento
-- Seja preciso e direto
-- Não forneça informações além da classificação
-- Foque apenas na análise das palavras-chave
+## Regras
+1. Analise palavras-chave na mensagem.  
+2. Retorne **somente** o arquivo mais provável.  
+3. Em caso de ambiguidade, escolha o mais relevante.  
+4. Sem explicações ou informações extras.
 
 Pergunta do usuário:
 {question}
@@ -84,4 +56,3 @@ def doc_mapper(question):
     #response_json = json.loads(response)
 
     return response.content
-
