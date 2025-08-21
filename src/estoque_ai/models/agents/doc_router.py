@@ -56,3 +56,4 @@ def doc_mapper(question):
     #response_json = json.loads(response)
 
     return response.content
+

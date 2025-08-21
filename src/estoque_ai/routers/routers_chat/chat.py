@@ -17,7 +17,7 @@ class ChatResponse(BaseModel):
 
 @router.post("/", response_model=ChatResponse, status_code=status.HTTP_200_OK, summary="Enviar nova Mensagem de Consulta")
 def enviar_mensagem(pergunta: ChatQuestion):
-    chat_sessions = mongo_client["chat_biblioteca"].chat_sessions
+    chat_sessions = mongo_client["chat_estoqueai"].chat_sessions
     conversation_history = []
 
     if pergunta.session:
@@ -30,7 +30,7 @@ def enviar_mensagem(pergunta: ChatQuestion):
         # Inserindo no MongoDB o registro da conversa/interação
 
 
-    resposta, consulta_sql = gerar_resposta(pergunta.mensagem, historico=conversation_history)
+    resposta, consulta_sql = response_format(pergunta.mensagem, historico=conversation_history)
 
     interacao = {
         "pergunta": pergunta.mensagem,

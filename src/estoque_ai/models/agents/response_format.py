@@ -7,7 +7,7 @@ import json
 from dotenv import load_dotenv
 
 from models import llm_gemini
-from filter_checker import filter_validator
+from validator import filter_validator
 
 load_dotenv()
 
@@ -103,7 +103,7 @@ def route_executor(question):
     route = filter_validator(question)
     validation = route.strip("```json").strip("```").strip()
     route_validation = json.loads(validation)
-    print(route_validation)
+
 
 
 
@@ -123,7 +123,7 @@ def route_executor(question):
         else:
             response = requests.get(url=route_validation["full_url"], headers={"Authorization": f"Bearer {access_token}"})
             response = response.json()
-            print(response)
+
 
 
 

@@ -6,9 +6,21 @@ import os
 from dotenv import load_dotenv
 
 from models import llm_gemini
-from filter_checker import filter_validator
+from validator import filter_validator
 
 load_dotenv()
+
+
+
+
+"""
+Não está sendo usado
+"""
+
+
+
+
+
 
 
 template = """  
@@ -84,5 +96,5 @@ def route_executor(question):
 
     return response_format.content
 
-resposta = route_executor(question='me traga todos os produtos cadastrados')
-print(resposta)
+r = route_executor(question="quantos produtos tem?")
+print(r)
