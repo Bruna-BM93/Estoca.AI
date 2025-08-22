@@ -3,7 +3,7 @@ from langchain.schema import HumanMessage
 
 import json
 
-from models import llm_gemini
+from src.estoque_ai.models.agents.models import llm_gemini
 
 template = """
 ## Tarefa

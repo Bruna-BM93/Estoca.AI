@@ -6,8 +6,8 @@ import os
 import json
 from dotenv import load_dotenv
 
-from models import llm_gemini
-from validator import filter_validator
+from src.estoque_ai.models.agents.models import llm_gemini
+from src.estoque_ai.models.agents.validator import filter_validator
 
 load_dotenv()
 
@@ -34,6 +34,8 @@ Para listas grandes, diga a quantidade e cite alguns exemplos.
 Se faltar informação, explique claramente o que está faltando e peça de forma amigável.
 
 Se houver erro, explique em linguagem simples e sugira tentar de novo.
+
+Se for algo relacionado ao produto e o usuário perguntar algo sobre os materiais utilizados na produção do produto, consulte a informação dentro de anotações internas (ela armazena um JSON da ficha técnica do produto)
 
 Exemplos
 
@@ -102,6 +104,7 @@ def route_executor(question):
     # Valida rota com agente anterior
     route = filter_validator(question)
     validation = route.strip("```json").strip("```").strip()
+    print(validation)
     route_validation = json.loads(validation)
 
 
@@ -131,7 +134,3 @@ def route_executor(question):
     response_format = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return response_format.content
-
-
-resposta = route_executor(question='me traga todos os produtos da categoria 1')
-print(resposta)

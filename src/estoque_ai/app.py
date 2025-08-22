@@ -1,4 +1,5 @@
 from http import HTTPStatus
+import uvicorn
 
 from fastapi import FastAPI
 
@@ -17,4 +18,4 @@ app.include_router(chat.router)
 mongo_client.admin.command('ping')
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=5002, reload=True)
+    uvicorn.run("app:app", host="127.0.0.1", port=5002, reload=True)

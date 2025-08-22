@@ -1,7 +1,7 @@
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-from models import llm_gemini
-from route_checker import route_validator
+from src.estoque_ai.models.agents.models import llm_gemini
+from src.estoque_ai.models.agents.route_checker import route_validator
 
 template = """
 Você é um agente especialista em APIs REST do eGestor.  

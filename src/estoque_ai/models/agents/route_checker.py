@@ -1,8 +1,9 @@
 from aiohttp.abc import HTTPException
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-from models import llm_gemini
-from doc_router import doc_mapper
+from src.estoque_ai.models.agents.models import llm_gemini
+from src.estoque_ai.models.agents.doc_router import doc_mapper
+
 
 template ="""
 Você é um agente especialista em APIs REST do eGestor. Sua função é receber **uma pergunta do usuário** e a **documentação OpenAPI resumida** e retornar a rota e endpoint corretos em JSON estruturado.
@@ -78,27 +79,33 @@ def route_validator(question):
     doc = doc_mapper(question)
 
     if doc == 'produtos':
-        with open('openapi.json', 'r', encoding='utf-8') as file:
+        import os
+        base_dir = os.path.dirname(__file__)
+        file_path = os.path.join(base_dir, 'openapi.json')
+
+
+
+        with open(file_path, 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     elif doc == 'empresa':
         return {"erro":"Sem acesso"}
-        with open('empresa.apib', 'r', encoding='utf-8') as file:
+        with open('src/estoque_ai/models/agents/empresa.apib', 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     elif doc == 'recebimentos':
         return {"erro":"Sem acesso"}
-        with open('recebimentos.apib', 'r', encoding='utf-8') as file:
+        with open('src/estoque_ai/models/agents/recebimentos.apib', 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     elif doc == 'vendas':
         return {"erro":"Sem acesso"}
-        with open('vendas.apib', 'r', encoding='utf-8') as file:
+        with open('src/estoque_ai/models/agents/vendas.apib', 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     elif doc == 'outros':
         return {"erro":"Sem acesso"}
-        with open('outros.apib', 'r', encoding='utf-8') as file:
+        with open('src/estoque_ai/models/agents/outros.apib', 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     else:

@@ -1,45 +1,30 @@
+import json
 from typing import Optional
 import uuid
+
+from dns.e164 import query
 from fastapi import APIRouter, status
 from pydantic import BaseModel
-from estoque_ai.models.agents import response_format
-
+from src.estoque_ai.models.agents.response_format import route_executor
+from src.estoque_ai.mongodb_database import mongo_client
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 class ChatQuestion(BaseModel):
     mensagem: str
-    session: Optional[str] = None
+    #session: Optional[str] = None
 
 class ChatResponse(BaseModel):
     pergunta: str
     resposta: str
-    session: str
+    #session: str
 
 @router.post("/", response_model=ChatResponse, status_code=status.HTTP_200_OK, summary="Enviar nova Mensagem de Consulta")
 def enviar_mensagem(pergunta: ChatQuestion):
-    chat_sessions = mongo_client["chat_estoqueai"].chat_sessions
-    conversation_history = []
 
-    if pergunta.session:
-        session = pergunta.session
-        conversation_history = list(chat_sessions.find({"session": session}))
+    resposta = route_executor(pergunta)
 
-    else:
-        session = str(uuid.uuid4())
-
-        # Inserindo no MongoDB o registro da conversa/interação
-
-
-    resposta, consulta_sql = response_format(pergunta.mensagem, historico=conversation_history)
-
-    interacao = {
+    return {
         "pergunta": pergunta.mensagem,
-        "resposta": resposta,
-        "session": session,
+        "resposta": resposta
     }
-
-    chat_sessions.insert_one(interacao | {"consulta_sql": consulta_sql})
-
-
-    return interacao
 
