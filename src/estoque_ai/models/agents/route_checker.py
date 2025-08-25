@@ -1,11 +1,12 @@
-from aiohttp.abc import HTTPException
+import os
+
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
-from src.estoque_ai.models.agents.models import llm_gemini
+
 from src.estoque_ai.models.agents.doc_router import doc_mapper
+from src.estoque_ai.models.agents.models import llm_gemini
 
-
-template ="""
+template = """
 Você é um agente especialista em APIs REST do eGestor. Sua função é receber **uma pergunta do usuário** e a **documentação OpenAPI resumida** e retornar a rota e endpoint corretos em JSON estruturado.
 
 ## Regras Principais
@@ -20,20 +21,20 @@ Você é um agente especialista em APIs REST do eGestor. Sua função é receber
 
 ## Formato de Resposta Obrigatório
 ```json
-[{{  
-  "validated": true,  
-  "selected_route": {{  
-    "path": "/caminho/da/rota",  
-    "method": "GET",    
-    "full_url": "https://v4.egestor.com.br/api/v1/caminho/da/rota",    
-    }},  
-    "parameters": [{{  
-      "name": "nome_parametro",  
-      "in": "query",  
-      "required": true,  
-      "type": "string",   
-    }}]  
-  }}  
+[{{
+  "validated": true,
+  "selected_route": {{
+    "path": "/caminho/da/rota",
+    "method": "GET",
+    "full_url": "https://v4.egestor.com.br/api/v1/caminho/da/rota",
+    }},
+    "parameters": [{{
+      "name": "nome_parametro",
+      "in": "query",
+      "required": true,
+      "type": "string",
+    }}]
+  }}
 }}]
 
 Pergunta do usuário:
@@ -45,6 +46,8 @@ Documentação Openapi:
 Responda somente com o JSON no formato acima. Não adicione explicações, comentários ou texto extra.
 
 """
+
+
 def route_validator(question):
     """
     SEGUNDO AGENTE - SELETOR DE ROTAS ERP
@@ -71,48 +74,41 @@ def route_validator(question):
     Este agente atua como intermediário, transformando a intenção do usuário
     em especificação técnica da API para os agentes subsequentes.
     """
-    prompt = PromptTemplate(
-        template=template,
-        input_variables=["question","openapi"]
-    )
+    prompt = PromptTemplate(template=template, input_variables=['question', 'openapi'])
 
     doc = doc_mapper(question)
 
     if doc == 'produtos':
-        import os
         base_dir = os.path.dirname(__file__)
         file_path = os.path.join(base_dir, 'openapi.json')
-
-
 
         with open(file_path, 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     elif doc == 'empresa':
-        return {"erro":"Sem acesso"}
+        return {'erro': 'Sem acesso'}
         with open('src/estoque_ai/models/agents/empresa.apib', 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     elif doc == 'recebimentos':
-        return {"erro":"Sem acesso"}
+        return {'erro': 'Sem acesso'}
         with open('src/estoque_ai/models/agents/recebimentos.apib', 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     elif doc == 'vendas':
-        return {"erro":"Sem acesso"}
+        return {'erro': 'Sem acesso'}
         with open('src/estoque_ai/models/agents/vendas.apib', 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     elif doc == 'outros':
-        return {"erro":"Sem acesso"}
+        return {'erro': 'Sem acesso'}
         with open('src/estoque_ai/models/agents/outros.apib', 'r', encoding='utf-8') as file:
             openapi = file.read()
 
     else:
-        return {"erro":"Sem acesso"}
+        return {'erro': 'Sem acesso'}
 
     prompt_format = prompt.format(question=question, openapi=openapi)
     resposta = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return resposta.content
-

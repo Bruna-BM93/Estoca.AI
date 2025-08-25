@@ -1,10 +1,10 @@
-from langchain.prompts import PromptTemplate
-from langchain.schema import HumanMessage
+import json
+import os
 
 import requests
-import os
-import json
 from dotenv import load_dotenv
+from langchain.prompts import PromptTemplate
+from langchain.schema import HumanMessage
 
 from src.estoque_ai.models.agents.models import llm_gemini
 from src.estoque_ai.models.agents.validator import filter_validator
@@ -74,61 +74,42 @@ Aqui está a resposta do sistema:
 
 
 def get_token():
-    API_KEY = os.getenv("API_ERP")
-    auth_url = os.getenv("AUTH_URL")
+    API_KEY = os.getenv('API_ERP')
+    auth_url = os.getenv('AUTH_URL')
 
-    auth_body = {
-        "grant_type": "personal",
-        "personal_token": API_KEY
-    }
+    auth_body = {'grant_type': 'personal', 'personal_token': API_KEY}
 
     auth_response = requests.post(auth_url, json=auth_body)
     auth_response.raise_for_status()
 
     token_data = auth_response.json()
-    access_token = token_data.get("access_token")
+    access_token = token_data.get('access_token')
 
     if not access_token:
-        raise ValueError("Não foi possível obter o access_token. Verifique sua chave API.")
+        raise ValueError('Não foi possível obter o access_token. Verifique sua chave API.')
 
     return access_token
 
 
 def route_executor(question):
-    prompt = PromptTemplate(
-        template=template,
-        input_variables=["question", "response_json"]
-    )
+    prompt = PromptTemplate(template=template, input_variables=['question', 'response_json'])
 
     access_token = get_token()
     # Valida rota com agente anterior
     route = filter_validator(question)
-    validation = route.strip("```json").strip("```").strip()
+    validation = route.strip('```json').strip('```').strip()
     print(validation)
     route_validation = json.loads(validation)
 
+    if route_validation['validated'] is not True:
+        response = {'erro': 'Rota não validada', 'detalhes': route_validation}
 
-
-
-    if route_validation["validated"] is not True:
-        response = {
-            "erro": "Rota não validada",
-            "detalhes": route_validation
-        }
-
+    elif route_validation['method'] != 'GET':
+        method = route_validation['route']['method']
+        response = {'erro': 'Método não suportado', 'metodo': method}
     else:
-        if route_validation["method"] != "GET":
-            method = route_validation["route"]["method"]
-            response = {
-                "erro": "Método não suportado",
-                "metodo": method
-            }
-        else:
-            response = requests.get(url=route_validation["full_url"], headers={"Authorization": f"Bearer {access_token}"})
-            response = response.json()
-
-
-
+        response = requests.get(url=route_validation['full_url'], headers={'Authorization': f'Bearer {access_token}'})
+        response = response.json()
 
     prompt_format = prompt.format(question=question, response_json=response)
     response_format = llm_gemini.invoke([HumanMessage(content=prompt_format)])
