@@ -1,4 +1,5 @@
 import os
+import ssl
 
 from dotenv import load_dotenv
 from pymongo import MongoClient
@@ -7,7 +8,7 @@ load_dotenv()
 
 MONGODB_USER = os.getenv('MONGO_USER')
 MONGODB_PASSWORD = os.getenv('MONGO_PASSWORD')
-MONGODB_CLUSER = os.getenv('MONGODB_CLUSER')
+MONGODB_CLUSTER = os.getenv('MONGODB_CLUSTER')
 
-MONGO_URI = f'mongodb+srv://{MONGODB_USER}:{MONGODB_PASSWORD}@{MONGODB_CLUSER}/?retryWrites=true&w=majority&appName=chathistory'
+MONGO_URI = f'mongodb+srv://{MONGODB_USER}:{MONGODB_PASSWORD}@{MONGODB_CLUSTER}/?retryWrites=true&w=majority&appName=Cluster'
 mongo_client = MongoClient(MONGO_URI)

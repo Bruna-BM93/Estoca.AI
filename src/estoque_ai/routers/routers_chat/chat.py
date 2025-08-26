@@ -44,3 +44,4 @@ def enviar_mensagem(pergunta: ChatQuestion):
     chat_session.insert_one(interation)
 
     return interation
+

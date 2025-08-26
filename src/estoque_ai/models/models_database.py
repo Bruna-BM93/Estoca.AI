@@ -4,23 +4,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SB_URL = os.getenv('SB_URL')
-SB_API_KEY = os.getenv('SB_API_KEY')
-SB_PASSWORD = os.getenv('SB_PASSWORD')
-SB_USER = os.getenv('SB_USER')
-SB_DATABASE = os.getenv('SB_DATABASE')
+DB_HOST = os.getenv("SUPABASE_HOST")        # ex: db.xxxxx.supabase.co
+DB_PORT = os.getenv("SUPABASE_PORT", "5432")
+DB_NAME = os.getenv("SUPABASE_DB")
+DB_USER = os.getenv("SUPABASE_USER")
+DB_PASS = os.getenv("SUPABASE_PASS")
 
 
-conn_str = f"postgresql://postgres:{SB_PASSWORD}@db.fgmgldxhbtgghgkiuesi.supabase.co:5432/postgres"
-
-conn = psycopg2.connect(conn_str, sslmode="require")  # SSL obrigatório
-cur = conn.cursor()
-
-cur.execute("SELECT version();")
-print(cur.fetchone())
-
-cur.close()
-conn.close()
-
-
+def get_conn():
+    return psycopg2.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS,
+        sslmode="require"
+    )
 
