@@ -12,7 +12,7 @@ key_grok = os.getenv('GROQ_API_KEY')
 llm_gemini = ChatGoogleGenerativeAI(
     api_key=key_gemini,
     model='gemini-2.5-flash',
-    temperature=0.7,
+    temperature=0.1,
 )
 
 llm_groq = ChatGroq(

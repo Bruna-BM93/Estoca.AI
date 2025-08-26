@@ -18,7 +18,7 @@ Você é um agente especialista em APIs REST do eGestor. Sua função é receber
 3. **Rotas do eGestor:** Use somente rotas disponíveis para consultas/GET quando não especificado.
 4. **Parâmetros:** Inclua apenas parâmetros obrigatórios não-body (query, path, header, cookie). Ignore body/request body.
 5. **Consulta OpenAPI:** Use o resumo da documentação para confirmar path, method e parâmetros obrigatórios. Use merge de allOf, alternativas de oneOf/anyOf como arrays resumidos.
-
+6. **Parâmetros:** Não faça suposição, apenas
 ## Formato de Resposta Obrigatório
 ```json
 [{{
@@ -112,3 +112,4 @@ def route_validator(question):
     resposta = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return resposta.content
+

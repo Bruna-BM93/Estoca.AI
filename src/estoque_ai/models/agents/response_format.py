@@ -45,7 +45,7 @@ Resposta: "Atualmente existem 245 produtos cadastrados."
 
 Pergunta: "Produtos da categoria eletrônicos"
 Dados: lista com 15 produtos
-Resposta: "Encontrei 15 produtos na categoria eletrônicos. Exemplos: notebook Dell, mouse sem fio e teclado mecânico. Os preços variam de R$ 25,90 a R$ 2.450,00."
+Resposta: "Encontrei 15 produtos na categoria eletrônicos."
 
 Pergunta: "Dados do produto código 123"
 Dados: {{ "missing_info": "código do produto" }}
@@ -62,7 +62,7 @@ Resposta: "Não consegui acessar os dados agora por um problema de autenticaçã
 - Não copie estruturas JSON literalmente
 
 ## Formato da Resposta
-Sempre retorne apenas o texto formatado, limpo e humanizado, sem qualquer estrutura JSON ou formatação especial.
+Sempre retorne apenas o texto formatado, limpo e humanizado, sem qualquer estrutura JSON ou formatação especial e sem quebra de linha (\n).
 
 Aqui está o que o usuário perguntou:
 {question}
@@ -91,7 +91,7 @@ def get_token():
     return access_token
 
 
-def route_executor(question):
+def route_executor(question, history):
     prompt = PromptTemplate(template=template, input_variables=['question', 'response_json'])
 
     access_token = get_token()
@@ -111,7 +111,7 @@ def route_executor(question):
         response = requests.get(url=route_validation['full_url'], headers={'Authorization': f'Bearer {access_token}'})
         response = response.json()
 
-    prompt_format = prompt.format(question=question, response_json=response)
+    prompt_format = prompt.format(question=question, response_json=response, history=history)
     response_format = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return response_format.content

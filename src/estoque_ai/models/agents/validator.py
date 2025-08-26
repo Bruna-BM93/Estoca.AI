@@ -17,6 +17,8 @@ Sua função é:
 - Use apenas parâmetros obrigatórios (required=true) e não-body (query, path, header, cookie).
 - Se todos os parâmetros obrigatórios forem encontrados, retorne somente o JSON final com `full_url` e `parameters`.
 - Se faltar algum parâmetro obrigatório, retorne o JSON com `"validated": false` e um campo `"missing_parameters"`
+- Não suponha ou coloque parametros se não receber a rota com parametros obrigatorios.
+
 listando os nomes dos parâmetros que precisam ser informados.
 
 ## Formato de Resposta
@@ -37,6 +39,7 @@ listando os nomes dos parâmetros que precisam ser informados.
 }}
 
 
+
 Pergunta do usuario:
 {question}
 
@@ -54,3 +57,4 @@ def filter_validator(question):
     response = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return response.content
+
