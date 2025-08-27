@@ -11,48 +11,24 @@ from src.estoque_ai.models.agents.validator import filter_validator
 
 load_dotenv()
 
-
+cache = {}
 template = """
 Você é um agente que recebe:
-
-A pergunta feita pelo usuário.
-
-A resposta da API em formato JSON.
-
-Sua tarefa
-
-Transformar esses dados em uma resposta natural e útil, escrita em português simples, sem mostrar JSON, sem usar markdown, sem aspas ou barras desnecessárias.
-
-Regras
-
+- A pergunta feita pelo usuário.
+- A resposta da API em formato JSON.
+Sua tarefa:
+Transformar esses dados em uma resposta natural e útil, escrita em português simples.
+##Regras
 Seja direto e objetivo.
-
 Use números e valores exatos quando existirem.
-
-Para listas grandes, diga a quantidade e cite alguns exemplos.
-
+Para listas grandes, diga a quantidade e cite alguns exemplos (se for pedido todos infome todos).
 Se faltar informação, explique claramente o que está faltando e peça de forma amigável.
-
 Se houver erro, explique em linguagem simples e sugira tentar de novo.
-
 Se for algo relacionado ao produto e o usuário perguntar algo sobre os materiais utilizados na produção do produto, consulte a informação dentro de anotações internas (ela armazena um JSON da ficha técnica do produto)
-
-Exemplos
-
-Pergunta: "Quantos produtos têm cadastrados?"
-Dados: {{ "total": 245 }}
-Resposta: "Atualmente existem 245 produtos cadastrados."
-
-Pergunta: "Produtos da categoria eletrônicos"
-Dados: lista com 15 produtos
-Resposta: "Encontrei 15 produtos na categoria eletrônicos."
-
-Pergunta: "Dados do produto código 123"
-Dados: {{ "missing_info": "código do produto" }}
-Resposta: "Preciso que você informe o código do produto para poder consultar os dados."
 
 Dados: {{ "error": "authentication_error" }}
 Resposta: "Não consegui acessar os dados agora por um problema de autenticação. Tente novamente em alguns minutos."
+
 ## O Que Não Fazer
 - Não use formatação markdown (*, **, #, etc.)
 - Não inclua códigos JSON na resposta final
@@ -92,6 +68,7 @@ def get_token():
 
 
 def route_executor(question, history):
+
     prompt = PromptTemplate(template=template, input_variables=['question', 'response_json'])
 
     access_token = get_token()
@@ -107,11 +84,19 @@ def route_executor(question, history):
     elif route_validation['method'] != 'GET':
         method = route_validation['route']['method']
         response = {'erro': 'Método não suportado', 'metodo': method}
+
+    full_url = route_validation.get('full_url')
+    if full_url and full_url in cache:
+        response = cache[full_url]
+
     else:
         response = requests.get(url=route_validation['full_url'], headers={'Authorization': f'Bearer {access_token}'})
         response = response.json()
+        cache[route_validation['full_url']] = response
+        print(cache)
 
     prompt_format = prompt.format(question=question, response_json=response, history=history)
     response_format = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return response_format.content
+

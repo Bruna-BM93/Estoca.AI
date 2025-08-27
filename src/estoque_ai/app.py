@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 import uvicorn
 from fastapi import FastAPI
 from mongodb_database import mongo_client
