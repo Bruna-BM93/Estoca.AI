@@ -12,7 +12,7 @@ Sua função é:
 3. Verificar se todos os parâmetros obrigatórios estão preenchidos:
    - Se o parâmetro estiver presente na pergunta, inclua no `full_url`.
    - Se não estiver presente, solicite explicitamente o valor ao usuário.
-
+   
 ## Regras
 - Use apenas parâmetros obrigatórios (required=true) e não-body (query, path, header, cookie).
 - Se todos os parâmetros obrigatórios forem encontrados, retorne somente o JSON final com `full_url` e `parameters`.
@@ -30,16 +30,11 @@ listando os nomes dos parâmetros que precisam ser informados.
   "full_url": "https://v4.egestor.com.br/api/v1/produtos?codCategoria=123",
   "parameters": []
 }}
-
 ## Se faltar parâmetro obrigatório:
-
 {{
   "validated": false,
   "missing_parameters": ["codCategoria"]
 }}
-
-
-
 Pergunta do usuario:
 {question}
 
