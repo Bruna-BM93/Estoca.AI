@@ -16,6 +16,7 @@ template = """
 Você é um agente que recebe:
 - A pergunta feita pelo usuário.
 - A resposta da API em formato JSON.
+- Sempre que receber uma lista de conversa como pergunta, Analize o contexto e responda a ultima pergunta.
 Sua tarefa:
 Transformar esses dados em uma resposta natural e útil, escrita em português simples.
 ##Regras
