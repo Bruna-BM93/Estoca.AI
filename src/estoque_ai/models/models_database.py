@@ -20,4 +20,3 @@ def get_conn():
         password=DB_PASS,
         sslmode="require"
     )
-

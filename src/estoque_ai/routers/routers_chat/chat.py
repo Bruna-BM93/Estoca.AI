@@ -1,7 +1,8 @@
+import uuid
+from typing import Optional
+
 from fastapi import APIRouter, status
 from pydantic import BaseModel
-from typing import Optional
-import uuid
 
 from src.estoque_ai.models.agents.response_format import route_executor
 from src.estoque_ai.mongodb_database import mongo_client
@@ -32,7 +33,6 @@ def enviar_mensagem(pergunta: ChatQuestion):
     else:
         session = str(uuid.uuid4())
 
-
     resposta = route_executor(pergunta.mensagem, history=conversation_history)
 
     interation = {
@@ -44,4 +44,3 @@ def enviar_mensagem(pergunta: ChatQuestion):
     chat_session.insert_one(interation)
 
     return interation
-

@@ -1,5 +1,6 @@
 from src.estoque_ai.models.models_database import get_conn
 
+
 def create_table():
     conn = get_conn()
     cur = conn.cursor()
@@ -20,10 +21,11 @@ def create_table():
         print("✅ Tabela 'configs' criada (ou já existia).")
     except Exception as e:
         conn.rollback()
-        print("❌ Erro ao criar tabela:", e)
+        print('❌ Erro ao criar tabela:', e)
     finally:
         cur.close()
         conn.close()
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     create_table()

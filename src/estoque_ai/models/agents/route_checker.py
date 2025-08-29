@@ -111,4 +111,3 @@ def route_validator(question):
     resposta = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return resposta.content
-

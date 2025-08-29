@@ -1,10 +1,10 @@
 import uvicorn
 from fastapi import FastAPI
-from mongodb_database import mongo_client
-from routers.routers_chat import chat
-from routers import router_db_config
+from estoque_ai.mongodb_database import mongo_client
+from estoque_ai.routers import router_db_config
+from estoque_ai.routers.routers_chat import chat
 
-app = FastAPI(title="Estoque.AI")
+app = FastAPI(title='Estoque.AI')
 
 app.include_router(chat.router)
 app.include_router(router_db_config.router_config)

@@ -69,7 +69,6 @@ def get_token():
 
 
 def route_executor(question, history):
-
     prompt = PromptTemplate(template=template, input_variables=['question', 'response_json'])
 
     access_token = get_token()
@@ -100,4 +99,3 @@ def route_executor(question, history):
     response_format = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return response_format.content
-
