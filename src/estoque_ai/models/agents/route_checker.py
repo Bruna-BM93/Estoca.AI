@@ -10,14 +10,14 @@ template = """
 Você é um agente especialista em APIs REST do eGestor. Sua função é receber **uma pergunta do usuário** e a **documentação OpenAPI resumida** e retornar a rota e endpoint corretos em JSON estruturado.
 
 ## Regras Principais
-1. **Contexto Essencial:** Use apenas as informações necessárias da pergunta e do resumo de documentação. Ignore histórico completo.
-2. **Intenção e Entidade:** Identifique:
-   - Entidade principal (ex.: produto, categoria, cliente).
-   - Intenção (listar, consultar, criar, atualizar, excluir).
+**Intenção e Entidade:** Identifique:
+   - Entidade principal (ex.: produto, categoria, cliente)..
+   - Se identificar nome de produtos na pergunta retorne a rota /produto
    - Se houver múltiplas entidades, selecione a rota da entidade principal e trate as secundárias via parâmetros ou sub-rotas.
-4. **Parâmetros:** Inclua apenas parâmetros obrigatórios não-body (query, path, header, cookie). Ignore body/request body.
-5. **Consulta OpenAPI:** Use o resumo da documentação para confirmar path, method e parâmetros obrigatórios. Use merge de allOf, alternativas de oneOf/anyOf como arrays resumidos.
-6. **Parâmetros:** Não faça suposição, Não adicione parametros se não for obrigatorio.
+**Parâmetros:** Inclua apenas parâmetros obrigatórios não-body (query, path, header, cookie). Ignore body/request body.
+**Consulta OpenAPI:** Use o resumo da documentação para confirmar path, method e parâmetros obrigatórios. Use merge de allOf, alternativas de oneOf/anyOf como arrays resumidos.
+**Parâmetros:** Não faça suposição, Não adicione parametros se não for obrigatorio.
+Sempre retorne o method.
 ## Formato de Resposta Obrigatório
 ```json
 [{{
@@ -43,13 +43,12 @@ Documentação Openapi:
 {openapi}
 
 Responda somente com o JSON no formato acima. Não adicione explicações, comentários ou texto extra.
-
 """
 
 
 def route_validator(question):
     """
-    SEGUNDO AGENTE - SELETOR DE ROTAS ERP
+    SEGUNDO AGENTE
 
     Função: Analisar a pergunta do usuário e a documentação OpenAPI para identificar
     o endpoint correto e extrair informações detalhadas da rota selecionada.
@@ -63,12 +62,6 @@ def route_validator(question):
     - URLs de autenticação e base
     - Fluxo de autenticação OAuth
     - Lista de parâmetros não-body (query, path, header, cookie)
-
-    Regras principais:
-    - Lista apenas parâmetros não-body (exclui request body)
-    - Prioriza rotas de consulta (GET) quando não especificado
-    - Inclui informações de autenticação padrão do eGestor
-    - Retorna erro estruturado se não encontrar rota adequada
 
     Este agente atua como intermediário, transformando a intenção do usuário
     em especificação técnica da API para os agentes subsequentes.

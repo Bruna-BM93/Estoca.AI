@@ -15,11 +15,9 @@ Sua função é:
 
 ## Regras
 - Use apenas parâmetros obrigatórios (required=true) e não-body (query, path, header, cookie).
-- Se todos os parâmetros obrigatórios forem encontrados, retorne somente o JSON final com `full_url` e `parameters`.
+- Se todos os parâmetros obrigatórios forem encontrados, retorne somente o JSON final com `full_url`
 - Se faltar algum parâmetro obrigatório, retorne o JSON com `"validated": false` e um campo `"missing_parameters"`
-- Não suponha ou coloque parametros se não receber a rota com parametros obrigatorios.
-
-listando os nomes dos parâmetros que precisam ser informados.
+- Não suponha ou coloque parametros se não receber a rota com parâmetros obrigatórios (required=true).
 
 ## Formato de Resposta
 ```json
@@ -30,11 +28,15 @@ listando os nomes dos parâmetros que precisam ser informados.
   "full_url": "https://v4.egestor.com.br/api/v1/produtos?codCategoria=123",
   "parameters": []
 }}
+```
 ## Se faltar parâmetro obrigatório:
+```json
 {{
   "validated": false,
   "missing_parameters": ["codCategoria"]
 }}
+```
+
 Pergunta do usuario:
 {question}
 
