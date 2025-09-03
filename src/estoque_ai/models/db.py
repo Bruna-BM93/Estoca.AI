@@ -1,4 +1,4 @@
-from src.estoque_ai.models.models_database import get_conn
+from estoque_ai.models.models_database import get_conn
 
 
 def create_table():

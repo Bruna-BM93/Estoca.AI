@@ -1,7 +1,7 @@
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 
-from src.estoque_ai.models.agents.models import llm_gemini
+from estoque_ai.models.agents.models import llm_gemini
 
 template = """
 ## Tarefa

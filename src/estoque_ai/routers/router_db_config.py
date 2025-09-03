@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from src.estoque_ai.models.models_database import get_conn
+from estoque_ai.models.models_database import get_conn
 
 router_config = APIRouter(prefix='/config', tags=['Configurações'])
 

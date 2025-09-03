@@ -3,8 +3,8 @@ import os
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 
-from src.estoque_ai.models.agents.doc_router import doc_mapper
-from src.estoque_ai.models.agents.models import llm_gemini
+from estoque_ai.models.agents.doc_router import doc_mapper
+from estoque_ai.models.agents.models import llm_gemini
 
 template = """
 Você é um agente especialista em APIs REST do eGestor. Sua função é receber **uma pergunta do usuário** e a **documentação OpenAPI resumida** e retornar a rota e endpoint corretos em JSON estruturado.

@@ -28,14 +28,6 @@
           { "name": "page", "in": "query", "schema": { "type": "integer" }, "description": "Número da página a ser retornada." }
         ],
         "responses": {
-          "200": { "description": "Requisição executada com sucesso" },
-          "400": { "description": "Erros de validação" },
-          "401": { "description": "Dados de acesso inválidos" },
-          "404": { "description": "Registro não encontrado" },
-          "405": { "description": "Método não implementado" },
-          "410": { "description": "Registro apagado" },
-          "422": { "description": "Dados fora do escopo definido" },
-          "429": { "description": "Número máximo de requisições atingido" }
         }
       }
     }

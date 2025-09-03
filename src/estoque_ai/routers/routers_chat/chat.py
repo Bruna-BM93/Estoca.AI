@@ -4,8 +4,8 @@ from typing import Optional
 from fastapi import APIRouter, status
 from pydantic import BaseModel
 
-from src.estoque_ai.models.agents.response_format import route_executor
-from src.estoque_ai.mongodb_database import mongo_client
+from estoque_ai.models.agents.response_format import route_executor
+from estoque_ai.mongodb_database import mongo_client
 
 router = APIRouter(prefix='/chat', tags=['Chat'])
 

@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
+
 from estoque_ai.mongodb_database import mongo_client
 from estoque_ai.routers import router_db_config
 from estoque_ai.routers.routers_chat import chat

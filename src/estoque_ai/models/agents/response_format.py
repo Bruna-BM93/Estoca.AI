@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 
-from src.estoque_ai.models.agents.models import llm_gemini
-from src.estoque_ai.models.agents.validator import filter_validator
+from estoque_ai.models.agents.models import llm_gemini
+from estoque_ai.models.agents.validator import filter_validator
 
 load_dotenv()
 
@@ -106,3 +106,4 @@ def route_executor(question, history):
     response_format = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return response_format.content
+
