@@ -1,6 +1,6 @@
 import os
 
-import psycopg2
+import psycopg
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,4 +13,11 @@ DB_PASS = os.getenv('SUPABASE_PASS')
 
 
 def get_conn():
-    return psycopg2.connect(host=DB_HOST, port=DB_PORT, dbname=DB_NAME, user=DB_USER, password=DB_PASS, sslmode='require')
+    return psycopg.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS,
+        sslmode='require',
+    )

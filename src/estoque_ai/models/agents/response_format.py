@@ -82,7 +82,6 @@ def route_executor(question, history):
     # Valida rota com agente anterior
     route = filter_validator(question)
     validation = route.strip('```json').strip('```').strip()
-    print(validation)
     route_validation = json.loads(validation)
 
     if route_validation['validated'] is not True:
@@ -100,10 +99,8 @@ def route_executor(question, history):
         response = requests.get(url=route_validation['full_url'], headers={'Authorization': f'Bearer {access_token}'})
         response = response.json()
         cache[route_validation['full_url']] = response
-        print(cache)
 
     prompt_format = prompt.format(question=question, response_json=response, history=history)
     response_format = llm_gemini.invoke([HumanMessage(content=prompt_format)])
 
     return response_format.content
-
